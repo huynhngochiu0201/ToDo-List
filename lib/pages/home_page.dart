@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   TextEditingController searchController = TextEditingController();
+  TextEditingController editingController = TextEditingController();
   List<TodoModel> todos = [];
   List<TodoModel> searchList = [];
 
@@ -63,9 +64,12 @@ class _HomePageState extends State<HomePage> {
                     final todo = searchList.reversed.toList()[index];
                     return TodoItem(
                       todo,
-                      onTap: () {},
-                      onEditing: () {},
-                      onDelete: () {},
+                      onTap: () {
+                        todo.isDone = !(todo.isDone ?? false);
+                        setState(() {});
+                      },
+                      onEditing: () => _editing(context, todo),
+                      onDelete: () => _delele(context, todo),
                     );
                   },
                   separatorBuilder: (_, __) => const SizedBox(height: 20.0),
@@ -76,6 +80,117 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _editing(BuildContext context, TodoModel todo) {
+    String text = todo.text ?? '';
+    editingController.text = text;
+    bool textEmpty = text.isEmpty;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setStatus) {
+          return AlertDialog(
+            title: Align(
+              alignment: Alignment.centerLeft,
+              child: CircleAvatar(
+                backgroundColor: AppColor.orange.withOpacity(0.8),
+                radius: 14.0,
+                child:
+                    const Icon(Icons.edit, size: 16.0, color: AppColor.white),
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  TextField(
+                    controller: editingController,
+                    onChanged: (value) {
+                      textEmpty = value.trim().isEmpty;
+                      setStatus(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: textEmpty
+                    ? null
+                    : () {
+                        todo.text = editingController.text.trim();
+                        setState(() {});
+                        Navigator.of(context).pop();
+                      },
+                child: Text(
+                  'Save',
+                  style: TextStyle(
+                      color: textEmpty ? AppColor.grey : AppColor.blue,
+                      fontSize: 16.8),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: AppColor.blue, fontSize: 16.8),
+                ),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _delele(BuildContext context, TodoModel todo) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('😐'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  'Delete this todo?',
+                  style: TextStyle(color: AppColor.brown, fontSize: 20.0),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'Yes',
+                style: TextStyle(color: AppColor.blue, fontSize: 16.8),
+              ),
+              onPressed: () {
+                todos.removeWhere((e) => e.id == todo.id);
+                searchList.removeWhere((e) => e.id == todo.id);
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'No',
+                style: TextStyle(color: AppColor.blue, fontSize: 16.8),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
