@@ -19,6 +19,8 @@ class SharedPrefs {
     print('object $maps');
 
     return maps.map((e) => TodoModel.fromJson(e)).toList();
+
+    ///TodoModel.fromJson(e) là NameContruter để lấy dữ liệu
   }
 
   Future<void> saveTodoList(List<TodoModel> todos) async {
