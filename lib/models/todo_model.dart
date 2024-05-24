@@ -4,6 +4,18 @@ class TodoModel {
   bool? isDone;
 
   TodoModel();
+  factory TodoModel.fromJson(Map<String, dynamic> json) => TodoModel()
+    ..id = json['id']
+    ..text = json['text']
+    ..isDone = json['isDone'];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'isDone': isDone,
+    };
+  }
 }
 
 List<TodoModel> todoListA = [
