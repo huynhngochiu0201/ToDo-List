@@ -4,10 +4,17 @@ class TodoModel {
   bool? isDone;
 
   TodoModel();
-  factory TodoModel.fromJson(Map<String, dynamic> json) => TodoModel()
-    ..id = json['id']
-    ..text = json['text']
-    ..isDone = json['isDone'];
+
+  // factory TodoModel.fromJson(Map<String, dynamic> json) => TodoModel()
+  //   ..id = json['id']
+  //   ..text = json['text']
+  //   ..isDone = json['isDone'];
+
+  TodoModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    text = json['text'];
+    isDone = json['isDone'];
+  }
 
   Map<String, dynamic> toJson() {
     return {

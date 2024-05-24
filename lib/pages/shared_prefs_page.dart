@@ -5,21 +5,23 @@ import 'package:todo_app_flutter/components/td_search_box.dart';
 import 'package:todo_app_flutter/components/todo_item.dart';
 import 'package:todo_app_flutter/models/todo_model.dart';
 import 'package:todo_app_flutter/resources/app_color.dart';
+import 'package:todo_app_flutter/services/local/shared_prefs.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+class SharedPrefsPage extends StatefulWidget {
+  const SharedPrefsPage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<SharedPrefsPage> createState() => _SharedPrefsPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SharedPrefsPageState extends State<SharedPrefsPage> {
   TextEditingController searchController = TextEditingController();
   TextEditingController editingController = TextEditingController();
   TextEditingController addController = TextEditingController();
   FocusNode addFocus = FocusNode();
+  SharedPrefs prefs = SharedPrefs();
   List<TodoModel> todos = [];
   List<TodoModel> searchList = [];
   bool showAddBox = false;
@@ -27,8 +29,15 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    todos = [...todoListA];
-    searchList = [...todos];
+    _getTodoList();
+  }
+
+  void _getTodoList() {
+    prefs.getTodoList().then((value) {
+      todos = value ?? [...todoListA];
+      searchList = [...todos];
+      setState(() {});
+    });
   }
 
   void _search(String value) {
@@ -70,8 +79,9 @@ class _HomePageState extends State<HomePage> {
                           final todo = searchList.reversed.toList()[index];
                           return TodoItem(
                             todo,
-                            onTap: () {
+                            onTap: () async {
                               todo.isDone = !(todo.isDone ?? false);
+                              await prefs.saveTodoList(todos);
                               setState(() {});
                             },
                             onEditing: () => _editing(context, todo),
@@ -112,7 +122,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _addButton() {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (!showAddBox) {
           showAddBox = true;
           setState(() {});
@@ -134,6 +144,7 @@ class _HomePageState extends State<HomePage> {
           ..isDone = false;
 
         todos.add(todo);
+        await prefs.saveTodoList(todos);
         _search('');
         addController.clear();
         searchController.clear();
@@ -224,8 +235,9 @@ class _HomePageState extends State<HomePage> {
               TextButton(
                 onPressed: textEmpty
                     ? null
-                    : () {
+                    : () async {
                         todo.text = editingController.text.trim();
+                        await prefs.saveTodoList(todos);
                         setState(() {});
                         Navigator.of(context).pop();
                       },
@@ -276,9 +288,10 @@ class _HomePageState extends State<HomePage> {
                 'Yes',
                 style: TextStyle(color: AppColor.blue, fontSize: 16.8),
               ),
-              onPressed: () {
+              onPressed: () async {
                 todos.removeWhere((e) => e.id == todo.id);
                 searchList.removeWhere((e) => e.id == todo.id);
+                await prefs.saveTodoList(todos);
                 setState(() {});
                 Navigator.of(context).pop();
               },
